@@ -1,6 +1,8 @@
 getCRMComparisonPlot <- function(data, toCompare, conditions,
-                                regmethod=robusteiv, cim="boot_positive_ci",
-				legend=TRUE)
+                                regmethod=robusteiv, 
+                                cim="boot_positive_ci",
+				                        normalize = FALSE,
+				                        legend=TRUE)
 {
 
     require(ggplot2)
@@ -31,7 +33,10 @@ getCRMComparisonPlot <- function(data, toCompare, conditions,
         x <- subset[subset$Construct == crm,]$Ren
         y <- subset[subset$Construct == crm,]$Luc
 
-        fits[[crm]] <- regmethod(x,y)
+        if (normalize)
+          fits[[crm]] <- robusteiv(x,y,normalize=normalize)
+        else
+          fits[[crm]] <- regmethod(x,y)
 
     }    
 
@@ -103,7 +108,9 @@ getCRMComparisonPlot <- function(data, toCompare, conditions,
 
 getCondComparisonPlot <- function(data, construct, toCompare, 
                                 otherconditions,
-                                regmethod=robusteiv, cim="boot_positive_ci")
+                                regmethod=robusteiv, 
+                                cim="boot_positive_ci",
+                                normalize = FALSE)
 {
 
     require(ggplot2)
@@ -138,7 +145,10 @@ getCondComparisonPlot <- function(data, construct, toCompare,
         x <- subset[subset$Construct == crm,]$Ren
         y <- subset[subset$Construct == crm,]$Luc
 
-        fits[[crm]] <- regmethod(x,y)
+        if (normalize)
+          fits[[crm]] <- robusteiv(x,y,normalize=normalize)
+        else
+          fits[[crm]] <- regmethod(x,y)
 
     }    
 
@@ -208,6 +218,7 @@ getCondComparisonPlot <- function(data, construct, toCompare,
 
 plotCRMComparisonAllConds <- function(data, toCompare, 
                                 regmethod=eiv, cim="gleser_ci",
+                                normalize = FALSE,
                                 ignore=c("Luc","Ren","Construct","Exp","Note"))
 {
 
@@ -224,7 +235,7 @@ plotCRMComparisonAllConds <- function(data, toCompare,
         conditions = as.list(cond_combinations[j,])
         
         p <- getCRMComparisonPlot(data, toCompare, conditions, 
-                                    regmethod, cim)
+                                    regmethod, cim, normalize = normalize)
 
         title <- ""
         for (condition in names(conditions))
@@ -295,6 +306,7 @@ getConditionCombinations <- function(data, ignore = c("Luc", "Ren"))
 
 calcSlopesCIs <- function(data, alpha = 0.05, 
                                 regmethod=eiv, cim="gleser_ci",
+                                normalize = FALSE,
                                 ignore=c("Luc","Ren","Exp","Note"))
 {
 
@@ -323,7 +335,10 @@ calcSlopesCIs <- function(data, alpha = 0.05,
        x <- ss$Ren
        y <- ss$Luc
 
-       fit <- regmethod(x,y,alpha=alpha)
+       if (normalize)
+         fit <- regmethod(x,y,alpha=alpha,normalize=normalize)
+       else
+         fit <- regmethod(x,y,alpha=alpha)
 
        slopes[j] <- fit$b
        ci <- fit[[cim]]
